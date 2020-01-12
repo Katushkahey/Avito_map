@@ -23,7 +23,7 @@
 4. Была использована карта Google.
 5. Библиотека для десериализации JSON - Moshi.
 6. Скриншоты приложения:
-![image]("https://github.com/Katushkahey/Avito_map/tree/master/Screenshots/Screenshot_0.png")
-![image]("https://github.com/Katushkahey/Avito_map/tree/master/Screenshots/Screenshot_1.png")
-![image]("https://github.com/Katushkahey/Avito_map/tree/master/Screenshots/Screenshot_2.png")
+![image]("https://github.com/Katushkahey/Avito_map/blob/master/Screenshots/Screenshot_0.png")
+![image]("https://github.com/Katushkahey/Avito_map/blob/master/Screenshots/Screenshot_1.png")
+![image]("https://github.com/Katushkahey/Avito_map/blob/master/Screenshots/Screenshot_2.png")
 
