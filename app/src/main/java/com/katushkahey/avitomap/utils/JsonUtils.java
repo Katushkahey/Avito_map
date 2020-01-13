@@ -12,23 +12,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 
 public class JsonUtils {
 
-    private List<Pin> totalList = new ArrayList<>();
-    private List<String> services = new ArrayList<>();
-    private Pins PINS = new Pins();
+    private List<Pin> totalList;
+    private List<String> services;
+    private Pins pins = new Pins();
 
     public void parsingJSON(Context context) {
         try {
             String jsonText = readText(context, R.raw.pins);
             Moshi moshi = new Moshi.Builder().build();
             JsonAdapter<Pins> jsonAdapter = moshi.adapter(Pins.class);
-            PINS = jsonAdapter.fromJson(jsonText);
-            services = PINS.getServices();
-            totalList = PINS.getPins();
+            pins = jsonAdapter.fromJson(jsonText);
+            services = pins.getServices();
+            totalList = pins.getPins();
         } catch (IOException e) {
             e.printStackTrace();
         }
