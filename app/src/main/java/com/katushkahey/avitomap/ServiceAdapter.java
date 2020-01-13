@@ -8,14 +8,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceHolder> {
     private List<Service> services;
     private final Listener onServiceClickListener;
 
-    public ServiceAdapter(List<Service> services, Listener onServiceClickListener) {
-        this.services = services;
+    public ServiceAdapter(List<String> names, Listener onServiceClickListener) {
+        services = new ArrayList<>();
+        for (int i = 0; i < names.size(); i++) {
+            services.add(new Service(names.get(i)));
+        }
         this.onServiceClickListener = onServiceClickListener;
     }
 
@@ -60,7 +64,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceH
         public void bind(Service service) {
             String n = "Service " + service.getName();
             name.setText(n);
-            if (service.checked) {
+            if (service.getChecked()) {
                 name.setEnabled(false);
             } else {
                 name.setEnabled(true);

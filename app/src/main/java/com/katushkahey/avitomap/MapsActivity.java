@@ -16,19 +16,22 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-    SupportMapFragment mapFragment;
+
+    private SupportMapFragment mapFragment;
     private GoogleMap mMap;
     Button chooseService;
     Intent intent;
+    private final JsonUtils JSONUTILS = new JsonUtils();
+    private List<String> names;
+    private List<Pin> totalList;
+    private List<String> resultList;
 
-    JsonUtils jsonUtils = new JsonUtils();
-    List<String> names;
-    List<Service> resultListOfServices;
-
-    private float[] colours = {BitmapDescriptorFactory.HUE_AZURE, BitmapDescriptorFactory.HUE_VIOLET, BitmapDescriptorFactory.HUE_GREEN, BitmapDescriptorFactory.HUE_MAGENTA, BitmapDescriptorFactory.HUE_RED};
+    private final float[] COLOURS = {BitmapDescriptorFactory.HUE_AZURE, BitmapDescriptorFactory.HUE_VIOLET, BitmapDescriptorFactory.HUE_GREEN,
+            BitmapDescriptorFactory.HUE_MAGENTA, BitmapDescriptorFactory.HUE_RED};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +40,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.activity_maps__map);
         mapFragment.getMapAsync(this);
-        names = jsonUtils.parsingToServices(this);
-        jsonUtils.parsingToList(this);
+        JSONUTILS.parsingJSON(getApplicationContext());
+        totalList = JSONUTILS.getTotalList();
+        names = JSONUTILS.getServices();
         chooseService = findViewById(R.id.activity_maps__button);
         chooseService.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                intent = new Intent(MapsActivity.this, ChoosingServiceActivity.class);
+                intent = new Intent("com.example.myapplication.ChoosingServiceActivity");
+                intent.putStringArrayListExtra("names", (ArrayList<String>) names);
                 startActivityForResult(intent, 1);
             }
         });
@@ -56,7 +61,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         } else {
             mMap.clear();
-            resultListOfServices = data.getParcelableArrayListExtra("resultServices");
+            resultList = data.getStringArrayListExtra("resultServices");
             mapFragment.getMapAsync(this);
             onMapReady(mMap);
         }
@@ -65,27 +70,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        LatLng services = null;
-        double[] latTotal = jsonUtils.getLatTotal();
-        double[] lngTotal = jsonUtils.getLngTotal();
-        if (resultListOfServices == null || resultListOfServices.isEmpty()) {
-            for (int i = 0; i < latTotal.length; i++) {
-                services = new LatLng(latTotal[i], lngTotal[i]);
-                mMap.addMarker(new MarkerOptions().position(services));
+        if (resultList == null || resultList.isEmpty()) {
+            LatLng service = null;
+            for (int i = 0; i < totalList.size(); i++) {
+                double lat = totalList.get(i).getCoordinates().getLat();
+                double lng = totalList.get(i).getCoordinates().getLng();
+                service = new LatLng(lat, lng);
+                String title = totalList.get(i).getService();
+                int colourIndex = names.size();
+                for (int j = 0; j < names.size(); j++) {
+                    if (title.equals(names.get(j))) {
+                        colourIndex = j;
+                    }
+                }
+                if (colourIndex == names.size()) {
+                    mMap.addMarker(new MarkerOptions().position(service).title(title).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                } else {
+                    mMap.addMarker(new MarkerOptions().position(service).title(title).icon(BitmapDescriptorFactory.defaultMarker(COLOURS[colourIndex % 5])));
+                }
             }
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latTotal[latTotal.length - 1], lngTotal[lngTotal.length - 1])));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(totalList.get(totalList.size() - 1).getCoordinates().getLat(),
+                    totalList.get(totalList.size() - 1).getCoordinates().getLng())));
         } else {
-            for (int i = 0; i < resultListOfServices.size(); i++) {
-                String s = resultListOfServices.get(i).getName();
-//                System.out.println(s);
-                double[] latResult = resultListOfServices.get(i).getLat();
-//                System.out.println(latResult.length);
-                double[] lngResult = resultListOfServices.get(i).getLng();
-//                System.out.println(lngResult.length);
-                for (int j = 0; j < latResult.length; j++) {
-                    services = new LatLng(latResult[j], lngResult[j]);
-                    mMap.addMarker(new MarkerOptions().position(services).title("service " + s).icon(BitmapDescriptorFactory
-                            .defaultMarker(colours[i % 5])));
+            for (int i = 0; i < resultList.size(); i++) {
+                for (int j = 0; j < totalList.size(); j++) {
+                    LatLng service = null;
+                    if (resultList.get(i).equals(totalList.get(j).getService())) {
+                        double lat = totalList.get(j).getCoordinates().getLat();
+                        double lng = totalList.get(j).getCoordinates().getLng();
+                        service = new LatLng(lat, lng);
+                        String title = resultList.get(i);
+                        mMap.addMarker(new MarkerOptions().position(service).title(title).icon(BitmapDescriptorFactory.defaultMarker(COLOURS[i % 5])));
+                    }
                 }
             }
         }

@@ -2,15 +2,12 @@ package com.katushkahey.avitomap;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.katushkahey.avitomap.utils.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +16,10 @@ public class ChoosingServiceActivity extends AppCompatActivity {
 
     private Button ok;
     private Button cancel;
-    private final JsonUtils jsonUtils = new JsonUtils();
     private List<String> services;
-    private List<String> resultServices;
     private ServiceAdapter adapter;
-    private List<Service> listOfServices;
-    private List<Service> resultListOfService;
+    private List<String> resultNames = new ArrayList<>();
+    private List<Service> resultListOfService = new ArrayList<>();
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,20 +29,17 @@ public class ChoosingServiceActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
         recyclerView.setHasFixedSize(true);
-        resultListOfService = new ArrayList<>();
-        resultServices = new ArrayList<>();
-        services = jsonUtils.parsingToServices(getApplicationContext());
-        jsonUtils.parsingToList(getApplicationContext());
-        adapter = new ServiceAdapter(getListOfServices(services), new ServiceAdapter.Listener() {
+        services = getIntent().getStringArrayListExtra("names");
+        adapter = new ServiceAdapter(services, new ServiceAdapter.Listener() {
             @Override
             public void onServiceClick(Service service) {
-                if (!service.checked) {
+                if (!service.getChecked()) {
                     service.setChecked(true);
-                    resultServices.add(service.getName());
+                    resultListOfService.add(service);
                     adapter.notifyDataSetChanged();
                 } else {
                     service.setChecked(false);
-                    resultServices.remove(service.getName());
+                    resultListOfService.remove(service);
                     adapter.notifyDataSetChanged();
                 }
             }
@@ -68,13 +60,8 @@ public class ChoosingServiceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                for (int i = 0; i < resultServices.size(); i++) {
-                    Service serviceNew = new Service(resultServices.get(i));
-                    serviceNew.setLat(jsonUtils.getLatResult(resultServices.get(i)));
-                    serviceNew.setLng(jsonUtils.getLngResult());
-                    resultListOfService.add(serviceNew);
-                }
-                intent.putParcelableArrayListExtra("resultServices", (ArrayList<? extends Parcelable>) resultListOfService);
+                getResultNames();
+                intent.putStringArrayListExtra("resultServices", (ArrayList<String>) resultNames);
                 setResult(RESULT_OK, intent);
                 finish();
             }
@@ -82,12 +69,11 @@ public class ChoosingServiceActivity extends AppCompatActivity {
 
     }
 
-    public List<Service> getListOfServices(List<String> names) {
-        listOfServices = new ArrayList<>();
-        for (int i = 0; i < names.size(); i++) {
-            listOfServices.add(new Service(names.get(i)));
+    public List<String> getResultNames() {
+        for (int i = 0; i < resultListOfService.size(); i++) {
+            resultNames.add(resultListOfService.get(i).getName());
         }
-        return listOfServices;
+        return resultNames;
     }
 
 }
